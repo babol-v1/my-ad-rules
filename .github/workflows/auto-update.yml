@@ -2,7 +2,7 @@ name: Auto Fetch and Purge Ad Rules
 
 on:
   schedule:
-    - cron: '0 20 * * *'
+    - cron: '041 04 * * *'
   workflow_dispatch:
 
 jobs:
