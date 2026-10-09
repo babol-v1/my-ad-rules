@@ -1,0 +1,39 @@
+name: Auto Fetch and Purge Ad Rules
+
+on:
+  schedule:
+    # 每天北京时间凌晨 04:00 (UTC 20:00) 自动运行
+    - cron: '0 20 * * *'
+  workflow_dispatch: # 支持在 GitHub 网页上手动点击运行
+
+jobs:
+  update-rules:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write # 显式声明允许写入仓库内容
+
+    steps:
+    - name: Checkout Repository
+      uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.x'
+
+    - name: Run Python Script
+      run: python update_rules.py
+
+    - name: Commit and Push Changes
+      run: |
+        git config --global user.name "github-actions[bot]"
+        git config --global user.email "github-actions[bot]@://github.com"
+        
+        # 检查生成的文件是否有变化
+        if [ -n "$(git status --porcelain purged_ad_rules.txt)" ]; then
+          git add purged_ad_rules.txt
+          git commit -m "Auto-update: rules refreshed and purged ($(date -u -d '+8 hours' +'%Y-%m-%d %H:%M:%S') 北京时间)"
+          git push
+        else
+          echo "规则内容无变化，跳过推送。"
+        fi
